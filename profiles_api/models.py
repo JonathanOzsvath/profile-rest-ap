@@ -2,33 +2,33 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import BaseUserManager
+from django.utils.translation import gettext_lazy as _
 
 
 class UserProfileManager(BaseUserManager):
     """Manager for user profiles"""
 
-    def create_user(self, email, name, password=None):
-        """Create a new user profile"""
+    def create_user(self, email, name, password, **other_fields):
         if not email:
-            raise ValueError('User must have an email address')
-
+            raise ValueError(_('You must provide an email address'))
+        # convert all in lowercase
         email = self.normalize_email(email)
-        user = self.model(email=email, name=name)
-
+        user = self.model(email=email, name=name, **other_fields)
         user.set_password(password)
-        user.save(using=self._db)
-
+        user.save()
         return user
 
-    def create_superuser(self, email, name, password):
-        """Create and save a new superuser with given details"""
-        user = self.create_user(email, name, password)
+    def create_superuser(self, email, name, password, **other_fields):
+        other_fields.setdefault('is_staff', True)
+        other_fields.setdefault('is_superuser', True)
+        other_fields.setdefault('is_active', True)
 
-        user.is_superuser = True
-        user.is_stuff = True
-        user.save(using=self._db)
-
-        return user
+        if other_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must be assigned to is_staff=True.')
+        if other_fields.get('is_superuser') is not True:
+            raise ValueError(
+                'Superuser must be assigned to is_superuser=True.')
+        return self.create_user(email, name, password, **other_fields)
 
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
@@ -40,8 +40,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     objects = UserProfileManager()
 
-    USERNAME_FIELD = 'email' # username helyett emaillel lehessen bejelentkezni
-    REQUIRED_FIELDS = ['name'] # email, jelszón kívül kötelező
+    USERNAME_FIELD = 'email'  # username helyett emaillel lehessen bejelentkezni
+    REQUIRED_FIELDS = ['name']  # email, jelszón kívül kötelező
 
     def get_full_name(self):
         """Retrive full name of user"""
