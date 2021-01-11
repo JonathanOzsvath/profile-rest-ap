@@ -1,0 +1,9 @@
+# AWS belépés ha ssh be van állítva az AWS fiókban
+# ec2-18-191-1-181.us-east-2.compute.amazonaws.com a public ipv4 cím
+ssh ubuntu@ec2-18-191-1-181.us-east-2.compute.amazonaws.com
+
+# setup.sh letöltése és elindítása
+curl -sL https://raw.githubusercontent.com/JonathanOzsvath/profile-rest-ap/main/deploy/setup.sh | sudo bash -
+
+#update futtatása
+sudo sh ./deploy/update.sh
